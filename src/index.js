@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import React, { useEffect, useReducer } from 'react';
 import ReactDOM from 'react-dom';
 
 import { BrowserRouter as Router } from 'react-router-dom';
@@ -43,9 +43,39 @@ const initialState = {
   characters: [],
 };
 
-const Application = () => {
+const useThunkReducer = (reducer, initialState) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+
+  const thunkDispatch = (action) => {
+    if (typeof action === 'function') {
+      action(dispatch);
+    } else {
+      dispatch(action);
+    }
+  };
+
+  return [state, thunkDispatch];
+};
+
+const fetchCharacters = (dispatch) => {
+  dispatch({ type: 'LOADING' });
+  fetch(endpoint + '/characters')
+    .then((res) => res.json())
+    .then((res) =>
+      dispatch({
+        type: 'RESPONSE_COMPLETE',
+        payload: { characters: res.characters },
+      }),
+    );
+};
+
+const Application = () => {
+  const [state, dispatch] = useThunkReducer(reducer, initialState);
   const { characters } = state;
+
+  // useEffect(() => {
+  //   dispatch(() => {});
+  // }, []);
 
   return (
     <div className="Application">
@@ -54,7 +84,9 @@ const Application = () => {
       </header>
       <main>
         <section className="sidebar">
-          <button onClick={() => {}}>Fetch Characters</button>
+          <button onClick={() => dispatch(fetchCharacters)}>
+            Fetch Characters
+          </button>
           <CharacterList characters={characters} />
         </section>
       </main>
