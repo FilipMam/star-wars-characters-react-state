@@ -2,11 +2,11 @@ import React, { useReducer, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import isFunction from 'lodash/isFunction';
 
-import { BrowserRouter as Router } from 'react-router-dom';
+import { BrowserRouter as Router, Route } from 'react-router-dom';
 
 import CharacterList from './CharacterList';
-
-import dummyData from './dummy-data';
+import CharacterView from './CharacterView';
+import endpoint from './endpoint';
 
 import './styles.scss';
 
@@ -38,17 +38,17 @@ const reducer = (state, action) => {
   return state;
 };
 
-const fetchCharacters = dispatch => {
+const fetchCharacters = (dispatch) => {
   dispatch({ type: 'LOADING' });
   fetch(endpoint + '/characters')
-    .then(response => response.json())
-    .then(response =>
+    .then((response) => response.json())
+    .then((response) =>
       dispatch({
         type: 'RESPONSE_COMPLETE',
         payload: { characters: response.characters },
       }),
     )
-    .catch(error => dispatch({ type: 'ERROR', payload: { error } }));
+    .catch((error) => dispatch({ type: 'ERROR', payload: { error } }));
 };
 
 const initialState = {
@@ -61,7 +61,7 @@ const useThunkReducer = (reducer, initialState) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const enhancedDispatch = React.useCallback(
-    action => {
+    (action) => {
       console.log(action);
 
       if (isFunction(action)) {
@@ -81,7 +81,7 @@ const Application = () => {
   const { characters } = state;
 
   useEffect(() => {
-    dispatch(dispatch => {});
+    dispatch((dispatch) => {});
   }, [dispatch]);
 
   return (
@@ -95,6 +95,9 @@ const Application = () => {
             Fetch Characters
           </button>
           <CharacterList characters={characters} />
+        </section>
+        <section className="CharacterView">
+          <Route path="/characters/:id" component={CharacterView}></Route>
         </section>
       </main>
     </div>
